@@ -15,7 +15,16 @@ class Base64ImageField(serializers.ImageField):
         return super().to_internal_value(data)
 
 
-class IngredientSerializer(serializers.ModelSerializer):
+class IngredienSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Ingredient
+        fields = (
+           "id", "name", "measurement_unit"
+        )
+
+
+class IngredientPostSerializer(serializers.ModelSerializer):
     id = serializers.SerializerMethodField()
     name = serializers.SerializerMethodField()
     measurement_unit = serializers.SerializerMethodField()
@@ -36,14 +45,6 @@ class IngredientSerializer(serializers.ModelSerializer):
         return obj.ingredient.measurement_unit
 
 
-class IngredientPostSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = IngredientRecipe
-        fields = (
-            "id", "amount"
-        )
-
 
 class TagSerializer(serializers.ModelSerializer):
 
@@ -57,6 +58,7 @@ class TagSerializer(serializers.ModelSerializer):
     #     return TagSerializer(instance).data
 
 
+
 class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -68,7 +70,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 class RecipeSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True)
-    ingredients = IngredientSerializer(many=True)
+    ingredients = IngredientPostSerializer(many=True)
     author = UserSerializer()
 
     class Meta:
@@ -112,7 +114,6 @@ class RecipePostSerializer(serializers.ModelSerializer):
         print(f"Печатаем VD_2: {self.validated_data}")
         recipe = Recipe.objects.create(**validated_data)  # создаем рецепт без тегов и ингредиентов
         tag_obj = Tag.objects.get(id=tags[0])  # достаем объект тега
-        #ingredient_obj = Ingredient.objects.get(id=ingredients[0]["id"])  # достаем объект ингредиента
         print(f"Печатаем ingredients: {ingredients}")
         for ingredient in ingredients:
             ingredient_amount = ingredient.pop("amount") # вырезаем amount
@@ -134,28 +135,8 @@ class RecipePostSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         return RecipeSerializer(instance).data
 
-    # def create(self, validated_data):
-    #     # Уберем список ингредиентов из словаря validated_data и сохраним его
-    #     print("Уберем список ингредиентов из словаря validated_data и сохраним его")
-    #     ingredients = validated_data.get('ingredients')
-    #     print(f'Состав переменной игридиенты: {ingredients}')
 
-    #     # Создадим новый рецепт пока без ингредиентов, данных нам достаточно
-    #     print("Создадим новый рецепт пока без ингредиентов, данных нам достаточно")
-    #     print(f'что в валидейтед_дата: {validated_data}')
-    #     recipe = Recipe.objects.create(**validated_data)
 
-    #     print("# Для каждого ингредиента из списка ингредиентов")
-    #     for ingredient in ingredients:
-    #         # Создадим новую запись или получим существующий экземпляр из БД
-    #         print("# Создадим новую запись или получим существующий экземпляр из БД")
-    #         current_ingredient, status = Ingredient.objects.get_or_create(
-    #             **ingredient)
-    #         # Поместим ссылку на каждый ингредиент во вспомогательную таблицу
-    #         # Не забыв указать к какому рецепту он относится
-    #         IngredientRecipe.objects.create(
-    #             ingredient=current_ingredient, recipe=recipe, amount=33)
-    #     return recipe
 
 
 class FollowSerializer(serializers.ModelSerializer):

@@ -2,7 +2,7 @@
 from rest_framework import viewsets, mixins
 
 from .models import Ingredient, Recipe, Tag, User, Follow
-from .serializers import RecipeSerializer, TagSerializer, IngredientSerializer, RecipePostSerializer, FollowSerializer
+from .serializers import RecipeSerializer, TagSerializer, IngredienSerializer, IngredientPostSerializer, RecipePostSerializer, FollowSerializer
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -25,7 +25,12 @@ class TagViewSet(viewsets.ModelViewSet):
 
 class IngredientViewSet(viewsets.ModelViewSet):
     queryset = Ingredient.objects.all()
-    serializer_class = IngredientSerializer
+    serializer_class = IngredienSerializer
+
+    def get_serializer_class(self):
+        if self.request.method in ['POST', 'PUT', 'PATCH']:
+            return IngredientPostSerializer
+        return IngredienSerializer
 
 
 class FollowViewSet(mixins.CreateModelMixin,
