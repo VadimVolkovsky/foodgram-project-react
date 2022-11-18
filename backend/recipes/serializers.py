@@ -16,7 +16,7 @@ class Base64ImageField(serializers.ImageField):
 
 
 class IngredienSerializer(serializers.ModelSerializer):
-
+    """Сериализатор для GET запросов ингредиентов"""
     class Meta:
         model = Ingredient
         fields = (
@@ -25,6 +25,7 @@ class IngredienSerializer(serializers.ModelSerializer):
 
 
 class IngredientPostSerializer(serializers.ModelSerializer):
+    """Сериализатор поля игредиентов при создании новых рецептов"""
     id = serializers.SerializerMethodField()
     name = serializers.SerializerMethodField()
     measurement_unit = serializers.SerializerMethodField()
@@ -45,7 +46,6 @@ class IngredientPostSerializer(serializers.ModelSerializer):
         return obj.ingredient.measurement_unit
 
 
-
 class TagSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -53,10 +53,6 @@ class TagSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'name', 'slug'
         )
-
-    # def to_representation(self, instance):
-    #     return TagSerializer(instance).data
-
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -105,21 +101,15 @@ class RecipePostSerializer(serializers.ModelSerializer):
         print(f"Печатаем VD: {self.validated_data}")
         tags_temp = validated_data.pop("tags")  # вырезали ненужное
         ingredients_temp = validated_data.pop("ingredients") # вырезали ненужное
-        print(f'Смотрим тип ingredients_temp: {type(ingredients_temp)}')
-        # ingredint_amount = ingredients_temp.remove("amount")
-        ingredients = self.initial_data.pop("ingredients")   # список ингредиентов
-        print(f"Печатаем Ingredients из IT: {ingredients}")
         tags = self.initial_data.pop('tags')  # список тегов
-        print(f"Печатаем IT_2: {self.initial_data}")
-        print(f"Печатаем VD_2: {self.validated_data}")
+        ingredients = self.initial_data.pop("ingredients")   # список ингредиентов
         recipe = Recipe.objects.create(**validated_data)  # создаем рецепт без тегов и ингредиентов
-        tag_obj = Tag.objects.get(id=tags[0])  # достаем объект тега
-        print(f"Печатаем ingredients: {ingredients}")
         for ingredient in ingredients:
-            ingredient_amount = ingredient.pop("amount") # вырезаем amount
+            print(f'Печатаем ингредиент {ingredient}')
+            ingredient_amount = ingredient.pop("amount")  # вырезаем amount
             ingredient_obj = Ingredient.objects.get(**ingredient)  # достаем объект ингредиента
 
-        # создаем объект в связной таблице:
+        # создаем объект в связной таблице ингредиентов:
             current_ingredient, status = ( 
                 IngredientRecipe.objects.get_or_create(
                     ingredient=ingredient_obj,
@@ -127,16 +117,14 @@ class RecipePostSerializer(serializers.ModelSerializer):
                     )
             )
             recipe.ingredients.add(current_ingredient) # добавляем ингредиент в рецепт
-
-        recipe.tags.add(tag_obj)  # добавляем теги в рецепт
         
+        for tag in tags: #перебираем теги
+            tag_obj = Tag.objects.get(id=tag)  # достаем объект тега
+            recipe.tags.add(tag_obj)  # добавляем тег в рецепт
         return recipe
     
     def to_representation(self, instance):
         return RecipeSerializer(instance).data
-
-
-
 
 
 class FollowSerializer(serializers.ModelSerializer):

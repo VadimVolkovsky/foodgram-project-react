@@ -19,7 +19,7 @@ class RecipeAdmin(admin.ModelAdmin):
         return ", ".join([t.name for t in obj.tags.all()])
 
     def get_ingredients(self, obj):  # подгружает список ингредиентов
-        return ", ".join([i.name for i in obj.ingredients.all()])
+        return ", ".join([i.ingredient.name for i in obj.ingredients.all()])
 
 
 class IngredientAdmin(admin.ModelAdmin):

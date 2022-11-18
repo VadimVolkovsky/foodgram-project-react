@@ -44,12 +44,20 @@ class Ingredient(models.Model):
         return self.name
 
 
-class IngredientRecipe(models.Model): # связующая модель
+class IngredientRecipe(models.Model):  # связующая модель
     ingredient = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
         related_name="ingredientsrecipe")
-    amount = models.IntegerField()
+    amount = models.PositiveSmallIntegerField(
+        verbose_name='Количество ингредиента',
+        validators=[
+            MinValueValidator(
+                1,
+                message='Количество ингредиента не может быть меньше единицы'
+            )
+        ]
+    )
 
 
 class Recipe(models.Model):
@@ -84,9 +92,6 @@ class Recipe(models.Model):
             MinValueValidator(1, message='Время готовки должно быть больше 1 минуты.')
         ]
     )
-    # is_favorited =
-    # is_in_shopping_cart =
-
     class Meta:
         verbose_name = "Рецепт"
         verbose_name_plural = "Рецепты"
