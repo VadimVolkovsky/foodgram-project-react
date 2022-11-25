@@ -1,6 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.core.validators import MinValueValidator
+#from users.models import User
+from rest_framework.authtoken.models import Token
 
 
 User = get_user_model()
@@ -11,7 +13,11 @@ class Tag(models.Model):
         max_length=200,
         verbose_name='Название'
     )
-    # color = цвет в HEX , max_length = 7
+    color = models.CharField(
+        max_length=7,
+        blank=True,
+        null=True
+    )
     slug = models.SlugField(
         max_length=200,
         unique=True,
@@ -44,22 +50,6 @@ class Ingredient(models.Model):
         return self.name
 
 
-class IngredientRecipe(models.Model):  # связующая модель
-    ingredient = models.ForeignKey(
-        Ingredient,
-        on_delete=models.CASCADE,
-        related_name="ingredientsrecipe")
-    amount = models.PositiveSmallIntegerField(
-        verbose_name='Количество ингредиента',
-        validators=[
-            MinValueValidator(
-                1,
-                message='Количество ингредиента не может быть меньше единицы'
-            )
-        ]
-    )
-
-
 class Recipe(models.Model):
     tags = models.ManyToManyField(Tag)
     author = models.ForeignKey(
@@ -69,7 +59,7 @@ class Recipe(models.Model):
         verbose_name='Автор'
     )
     ingredients = models.ManyToManyField(
-        IngredientRecipe,
+        Ingredient, through="IngredientRecipe",
         related_name="recipes"
     )
     name = models.CharField(
@@ -92,12 +82,31 @@ class Recipe(models.Model):
             MinValueValidator(1, message='Время готовки должно быть больше 1 минуты.')
         ]
     )
+
     class Meta:
         verbose_name = "Рецепт"
         verbose_name_plural = "Рецепты"
 
     def __str__(self):
         return self.name
+
+
+class IngredientRecipe(models.Model):  # связующая модель
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE)
+    ingredient = models.ForeignKey(
+        Ingredient,
+        on_delete=models.CASCADE)
+    amount = models.PositiveSmallIntegerField(
+        verbose_name='Количество ингредиента',
+        validators=[
+            MinValueValidator(
+                1,
+                message='Количество ингредиента не может быть меньше единицы'
+            )
+        ]
+    )
 
 
 class Follow(models.Model):
