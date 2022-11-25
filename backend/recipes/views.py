@@ -6,21 +6,15 @@ from rest_framework.decorators import action
 from djoser.views import UserViewSet
 from django.shortcuts import get_object_or_404
 
-from .models import Ingredient, Recipe, Tag, User, Follow
+from .models import Ingredient, Recipe, Tag, User, Follow, Favorite
 from .serializers import (RecipeSerializer, TagSerializer, IngredientSerializer,
-    IngredientPostSerializer, RecipePostSerializer, UserSerializer, CustomUserSerializer, SubscribeSerializer)
-    #FollowPostSerializer)
+    IngredientPostSerializer, RecipePostSerializer, UserSerializer, CustomUserSerializer, SubscribeSerializer, FavoriteSerializer)
 from rest_framework import status
 
 
 class CustomUserViewSet(UserViewSet):
     queryset = User.objects.all()
     serializer_class = CustomUserSerializer
-
-    # def get_serializer_class(self):
-    #     if self.request.method in ['POST', 'PUT', 'PATCH']:
-    #         return CustomUserCreateSerializer
-    #     return UserSerializer
 
     def get_queryset(self):
         new_queryset = User.objects.all()
@@ -60,10 +54,6 @@ class CustomUserViewSet(UserViewSet):
         #return self.get_paginated_response(serializer.data)
         return Response(serializer.data)
 
-# class UserViewSet(viewsets.ModelViewSet):
-#     queryset = User.objects.all()
-#     serializer_class = UserSerializer
-
 
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
@@ -77,6 +67,26 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipePostSerializer
         return RecipeSerializer
 
+    @action(detail=True, methods=['post', 'delete'])
+    def favorite(self, request, **kwargs):
+        user = get_object_or_404(User, username=request.user)
+        print(f'юзер: {user}')
+        print(f'кварга: {self.kwargs}')
+        recipe = get_object_or_404(Recipe, pk=self.kwargs.get('pk'))
+        print(f'рецепт: {recipe}')
+
+        if request.method == 'POST':
+            serializer = FavoriteSerializer(
+                recipe, data=request.data, context={'request': request}
+            )
+            serializer.is_valid(raise_exception=True)
+            Favorite.objects.create(user=user, recipe=recipe)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        if request.method == "DELETE":
+            favorite = get_object_or_404(Favorite, user=user, recipe=recipe)
+            favorite.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
 class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
@@ -92,48 +102,3 @@ class IngredientViewSet(viewsets.ModelViewSet):
             return IngredientPostSerializer
         return IngredientSerializer
 
-
-#class FollowViewSet(viewsets.ModelViewSet):
-
-# class FollowViewSet(mixins.CreateModelMixin,
-#                     mixins.ListModelMixin,
-#                     viewsets.GenericViewSet):
-#     queryset = Follow.objects.all()
-#     serializer_class = FollowSerializer
-
-#     def get_queryset(self):
-#         """Возвращает все подписки пользователя, сделавшего запрос"""
-#         new_queryset = Follow.objects.filter(user=self.request.user)
-#         return new_queryset
-
-#     def create(self, request, *args, **kwargs):
-#         user = self.request.user,
-#         author = User.objects.get(id=kwargs['user_id'])
-#         request.data["user"]=user
-#         request.data["author"]=author
-#         serializer = FollowSerializer(data=request.data)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data, status=status.HTTP_201_CREATED) 
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
-
-        
-
-    # def perform_create(self, serializer):
-    #     return serializer.save(user=self.request.user)
-    
-# class FollowList(generics.ListAPIView):
-#     queryset = Follow.objects.all()
-#     serializer_class = FollowSerializer
-
-
-# class FollowCreate(generics.CreateAPIView):
-#     queryset = Follow.objects.all()
-#     serializer_class = FollowSerializer
-
-#     def post(self, request, *args, **kwargs):
-#         user = self.request.user
-#         author = User.objects.get(id=kwargs['user_id'])
-#         return Follow.objects.get_or_create(user=user, author=author)
-
-    

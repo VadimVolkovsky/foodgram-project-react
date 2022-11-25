@@ -5,7 +5,7 @@ from djoser.serializers import UserSerializer
 from rest_framework.validators import UniqueTogetherValidator
 import webcolors
 
-from .models import Recipe, Ingredient, Tag, IngredientRecipe, Follow
+from .models import Recipe, Ingredient, Tag, IngredientRecipe, Follow, Favorite
 from .models import User
 from rest_framework import status
 
@@ -79,15 +79,6 @@ class TagSerializer(serializers.ModelSerializer):
         )
 
 
-# class UserSerializer(serializers.ModelSerializer):
-
-#     class Meta:
-#         model = User
-#         fields = (
-#             "email", "id", "username", "first_name", "last_name" # ,"is_subscribted"
-#          )
-
-
 class CustomUserSerializer(UserSerializer):
     email = serializers.EmailField(required=True)
     first_name = serializers.CharField(required=True)
@@ -128,7 +119,6 @@ class RecipePostSerializer(serializers.ModelSerializer):
 
     ingredients = IngredientRecipeSerializer(many=True)
     image = Base64ImageField(required=False, allow_null=True)
-    author = CustomUserSerializer()
 
     class Meta:
         model = Recipe
@@ -139,9 +129,8 @@ class RecipePostSerializer(serializers.ModelSerializer):
         read_only_fields = ('author',)
 
     def create(self, validated_data):
-        tags_temp = validated_data.pop("tags")  # вырезали ненужное
+        tags = validated_data.pop("tags")  # вырезали теги
         ingredients_temp = validated_data.pop("ingredients") # вырезали ненужное
-        tags = self.initial_data.pop('tags')  # список тегов
         ingredients = self.initial_data.pop("ingredients")   # список ингредиентов
         recipe = Recipe.objects.create(**validated_data)  # создаем рецепт без тегов и ингредиентов
         for ingredient in ingredients:
@@ -159,43 +148,11 @@ class RecipePostSerializer(serializers.ModelSerializer):
             )
             recipe.ingredients.add(ingredient_obj) # добавляем ингредиент в рецепт
         
-        for tag in tags: #перебираем теги
-            tag_obj = Tag.objects.get(id=tag)  # достаем объект тега
-            recipe.tags.add(tag_obj)  # добавляем тег в рецепт
+        recipe.tags.set(tags) # добавляем все теги в рецепт через set
         return recipe
     
     def to_representation(self, instance):
         return RecipeSerializer(instance).data
-
-
-# class FollowSerializer(serializers.ModelSerializer):
-#     """Сериайлайзер для GET запросов на подписки"""
-#     class Meta:
-#         model = Follow
-#         fields = ('user', 'author')
-
-
-# class FollowSerializer(serializers.ModelSerializer):
-#     user = serializers.SlugRelatedField(
-#         read_only=True,
-#         slug_field='username',
-#         default=serializers.CurrentUserDefault()
-#     )
-#     author = serializers.SlugRelatedField(
-#         slug_field='username',
-#         queryset=User.objects.all()
-#     )
-
-#     class Meta:
-#         model = Follow
-#         fields = '__all__'
-#         validators = (
-#             UniqueTogetherValidator(
-#                 queryset=Follow.objects.all(),
-#                 fields=('user', 'author',),
-#                 message="Вы уже подписаны на данного автора"
-#             ),
-#         )
 
 
 class SubscribeSerializer(UserSerializer):
@@ -203,7 +160,7 @@ class SubscribeSerializer(UserSerializer):
     # recipes_count = serializers.SerializerMethodField()
     # recipes = serializers.SerializerMethodField()
 
-    class Meta(UserSerializer.Meta):
+    class Meta(UserSerializer.Meta): # убрать наследование ? 
         #fields = UserSerializer.Meta.fields + ('recipes_count', 'recipes')
         fields = (
             "id", "email", "username", "first_name", "last_name") #, "recipes", "recipes_count"
@@ -220,6 +177,24 @@ class SubscribeSerializer(UserSerializer):
         if user == author:
             raise serializers.ValidationError(
                 detail='Нельзя подписаться на самого себя',
+                code=status.HTTP_400_BAD_REQUEST,
+            )
+        return data
+
+
+class FavoriteSerializer(RecipeSerializer):
+    name = serializers.ReadOnlyField()
+    cooking_time = serializers.ReadOnlyField()
+    
+    class Meta(RecipeSerializer.Meta):
+        fields = ("id", "name", "image", "cooking_time")
+        
+    def validate(self, data):
+        recipe = self.instance
+        user = self.context.get('request').user
+        if Favorite.objects.filter(recipe=recipe, user=user).exists():
+            raise serializers.ValidationError(
+                detail='Рецепт уже добавлен в избранное',
                 code=status.HTTP_400_BAD_REQUEST,
             )
         return data

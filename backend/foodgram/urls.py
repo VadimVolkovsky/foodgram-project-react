@@ -19,9 +19,6 @@ urlpatterns = [
     path('api/v1/', include(router.urls)),
     path('api/v1/', include('djoser.urls')),
     path('api/v1/', include('djoser.urls.authtoken')),
-    #path('api/v1/', include('users.urls')),
-    # path('api/v1/users', include('users.urls')),  # Работа с пользователями
-    #path('api/', include('djoser.urls.authtoken')),  # Работа с токенами
 ]
 
 if settings.DEBUG:

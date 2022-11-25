@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.core.validators import MinValueValidator
+from django.db.models import UniqueConstraint
 #from users.models import User
 from rest_framework.authtoken.models import Token
 
@@ -130,5 +131,28 @@ class Follow(models.Model):
             models.CheckConstraint(
                 check=~models.Q(user=models.F('author')),
                 name='prevent_self_follow',
+            )
+        ]
+
+
+class Favorite(models.Model):
+    user = models.ForeignKey(
+        User,
+        related_name="favorites",
+        on_delete=models.CASCADE
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        related_name="favorites",
+        on_delete=models.CASCADE
+    )
+
+    class Meta:
+        verbose_name = "Избранный рецепт"
+        verbose_name_plural = "Избранные рецепты"
+        constraints = [
+            UniqueConstraint(
+                fields=['user', 'recipe'],
+                name="unique_favorite"
             )
         ]
