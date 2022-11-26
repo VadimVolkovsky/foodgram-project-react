@@ -1,4 +1,5 @@
-from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
 from django.core.validators import MinValueValidator
 from django.db.models import UniqueConstraint
@@ -6,10 +7,31 @@ from django.db.models import UniqueConstraint
 from rest_framework.authtoken.models import Token
 
 
-User = get_user_model()
+class User(AbstractUser):
+    """Модель пользователя"""
+    first_name = models.CharField(
+        verbose_name="Имя",
+        max_length=150
+    )
+    last_name = models.CharField(
+        verbose_name="Фамилия",
+        max_length=150
+    )
+    email = models.EmailField(
+        verbose_name="Email",
+        max_length=254,
+        unique=True
+    )
+    username = models.CharField(
+        verbose_name="Имя пользователя",
+        max_length=150,
+        unique=True,
+        validators=(UnicodeUsernameValidator(),)
+    )
 
 
 class Tag(models.Model):
+    """Модель хештегов"""
     name = models.CharField(
         max_length=200,
         verbose_name='Название'
@@ -34,6 +56,7 @@ class Tag(models.Model):
 
 
 class Ingredient(models.Model):
+    """Модель ингредиентов"""
     name = models.CharField(
         max_length=200,
         verbose_name='Название'
@@ -52,6 +75,7 @@ class Ingredient(models.Model):
 
 
 class Recipe(models.Model):
+    """Модель рецептов"""
     tags = models.ManyToManyField(Tag)
     author = models.ForeignKey(
         User,
@@ -92,7 +116,8 @@ class Recipe(models.Model):
         return self.name
 
 
-class IngredientRecipe(models.Model):  # связующая модель
+class IngredientRecipe(models.Model): 
+    """Связующая модель для ингредиентов и рецептов"""
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE)
@@ -111,6 +136,7 @@ class IngredientRecipe(models.Model):  # связующая модель
 
 
 class Follow(models.Model):
+    """Модель для подписок на авторов"""
     user = models.ForeignKey(
         User,
         related_name='follower',
@@ -136,6 +162,7 @@ class Follow(models.Model):
 
 
 class Favorite(models.Model):
+    """Модель для избранных рецептов"""
     user = models.ForeignKey(
         User,
         related_name="favorites",
@@ -154,5 +181,29 @@ class Favorite(models.Model):
             UniqueConstraint(
                 fields=['user', 'recipe'],
                 name="unique_favorite"
+            )
+        ]
+
+
+class ShoppingCart(models.Model):
+    """Модель для списка покупок"""
+    user = models.ForeignKey(
+        User,
+        related_name="shoppingcarts",
+        on_delete=models.CASCADE
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        related_name="shoppingcarts",
+        on_delete=models.CASCADE
+    )
+
+    class Meta:
+        verbose_name = "Рецепт в корзине"
+        verbose_name_plural = "Рецепты в корзине"
+        constraints = [
+            UniqueConstraint(
+                fields=['user', 'recipe'],
+                name="unique_shoppingcart"
             )
         ]

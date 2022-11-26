@@ -115,15 +115,14 @@ USE_L10N = True
 
 USE_TZ = True
 
-#AUTH_USER_MODEL = 'users.User'
+AUTH_USER_MODEL = 'recipes.User'
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.AllowAny',
     ],
 
     'DEFAULT_AUTHENTICATION_CLASSES': [
-       # 'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.TokenAuthentication',
     ],
 }
@@ -133,19 +132,14 @@ DJOSER = {
     'SERIALIZERS': {
         'user': 'recipes.serializers.CustomUserSerializer',
         'current_user': 'recipes.serializers.CustomUserSerializer',
-        'user_create': "recipes.serializers.CustomUserSerializer"
+        'user_create': "recipes.serializers.CustomUserCreateSerializer"
     },
     'PERMISSIONS': {
-        'user': ['rest_framework.permissions.AllowAny'],
+        'user': ['djoser.permissions.CurrentUserOrAdminOrReadOnly'],
+        'user_list': ['rest_framework.permissions.IsAuthenticatedOrReadOnly'],
     }
 }
 
-# SIMPLE_JWT = {
-#    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
-#    'AUTH_HEADER_TYPES': ('Bearer',),
-#    'USER_ID_FIELD': 'email',
-#    'USER_ID_CLAIM': 'email',
-# }
 
 
 
