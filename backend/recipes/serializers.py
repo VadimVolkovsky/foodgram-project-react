@@ -93,14 +93,16 @@ class CustomUserSerializer(UserSerializer):
 
 
 class RecipeSerializer(serializers.ModelSerializer):
+    """Сериализатор для просмотра рецептов"""
     tags = TagSerializer(many=True)
     ingredients = serializers.SerializerMethodField()
     author = CustomUserSerializer()
+    is_favorited = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Recipe
         fields = (
-            'id', 'tags', 'author', 'ingredients', 'name',
+            'id', 'tags', 'author', 'ingredients', 'is_favorited', 'name',
             'image', 'text', 'cooking_time'
         )
         read_only_fields = ('author',)
@@ -109,8 +111,15 @@ class RecipeSerializer(serializers.ModelSerializer):
         ingredients = IngredientRecipe.objects.filter(recipe=obj)
         return IngredientRecipeSerializer(ingredients, many=True).data
 
+    def get_is_favorited(self, obj):
+        user = self.context.get('request').user
+        if user.is_anonymous:
+            return False
+        return user.favorites.filter(recipe=obj).exists()
+
 
 class RecipePostSerializer(serializers.ModelSerializer):
+    """Сериализатор создания рецепта"""
     tags = serializers.SlugRelatedField(
         slug_field="id",
         queryset=Tag.objects.all(),
@@ -152,7 +161,9 @@ class RecipePostSerializer(serializers.ModelSerializer):
         return recipe
     
     def to_representation(self, instance):
-        return RecipeSerializer(instance).data
+        request = self.context.get('request')
+        context = {'request': request}
+        return RecipeSerializer(instance, context=context).data
 
 
 class SubscribeSerializer(UserSerializer):

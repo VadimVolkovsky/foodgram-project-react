@@ -69,11 +69,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post', 'delete'])
     def favorite(self, request, **kwargs):
+        """Метод для добавления рецепта в избранное"""
         user = get_object_or_404(User, username=request.user)
-        print(f'юзер: {user}')
-        print(f'кварга: {self.kwargs}')
         recipe = get_object_or_404(Recipe, pk=self.kwargs.get('pk'))
-        print(f'рецепт: {recipe}')
 
         if request.method == 'POST':
             serializer = FavoriteSerializer(
