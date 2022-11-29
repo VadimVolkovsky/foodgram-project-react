@@ -5,8 +5,7 @@ from django.core.files.base import ContentFile
 from rest_framework import serializers, status
 from rest_framework.validators import UniqueTogetherValidator
 from users.models import Follow
-#from users.serializers import CustomUserSerializer
-import users.serializers as us
+from users.serializers import CustomUserSerializer
 
 from .models import (Favorite, Ingredient, IngredientRecipe, Recipe,
                      ShoppingCart, Tag)
@@ -84,7 +83,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     """Сериализатор для просмотра рецептов"""
     tags = TagSerializer(many=True)
     ingredients = serializers.SerializerMethodField()
-    author = us.CustomUserSerializer()
+    author = CustomUserSerializer()
     is_favorited = serializers.SerializerMethodField(read_only=True)
     is_in_shopping_cart = serializers.SerializerMethodField(read_only=True)
 
@@ -159,6 +158,22 @@ class RecipePostSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         context = {'request': request}
         return RecipeSerializer(instance, context=context).data
+
+
+# class RecipeMiniSerializer(serializers.ModelSerializer):
+#     """Сериализатор для просмотра рецептов в профиле автора"""
+#     tags = TagSerializer(many=True)
+#     ingredients = serializers.SerializerMethodField()
+#     is_favorited = serializers.SerializerMethodField(read_only=True)
+#     is_in_shopping_cart = serializers.SerializerMethodField(read_only=True)
+
+#     class Meta:
+#         model = Recipe
+#         fields = (
+#             'id', 'tags', 'ingredients', 'is_favorited',
+#             'is_in_shopping_cart', 'name', 'image', 'text', 'cooking_time'
+#         )
+
 
 
 class FavoriteSerializer(RecipeSerializer):

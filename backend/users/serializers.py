@@ -1,5 +1,5 @@
 from djoser.serializers import UserCreateSerializer, UserSerializer
-from recipes.serializers import RecipeSerializer
+# from recipes.serializers import RecipeSerializer
 from rest_framework import serializers
 
 from .models import Follow, User
@@ -11,12 +11,11 @@ class CustomUserSerializer(UserSerializer):
     first_name = serializers.CharField(required=True)
     last_name = serializers.CharField(required=True)
     password = serializers.CharField(write_only=True)
-    recipes = RecipeSerializer()
-    
+
     class Meta:
         model = User
         fields = (
-            "id", "email", "username", "first_name", "last_name", "password", 'recipes',  # проверить нужен ли passsword ??
+            "id", "email", "username", "first_name", "last_name", "password",  # проверить нужен ли passsword ??
          )
 
 
@@ -28,7 +27,6 @@ class CustomUserCreateSerializer(UserCreateSerializer):
         fields = (
             'email', 'username', 'first_name',
             'last_name', 'password')
-
 
 
 class SubscribeSerializer(UserSerializer):
@@ -56,3 +54,5 @@ class SubscribeSerializer(UserSerializer):
                 code=status.HTTP_400_BAD_REQUEST,
             )
         return data
+
+
