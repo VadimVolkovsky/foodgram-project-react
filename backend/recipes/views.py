@@ -1,20 +1,27 @@
-# from django.shortcuts import render
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
-from users.permissions import IsAdminOrReadOnly
-from django.http import HttpResponse
 from collections import OrderedDict
 from datetime import datetime
-from rest_framework import viewsets, mixins, generics
-from rest_framework.response import Response
-from rest_framework.decorators import action
-from djoser.views import UserViewSet
-from django.shortcuts import get_object_or_404
-from django.db.models import Sum
 
-from .models import Ingredient, IngredientRecipe, Recipe, Tag, User, Follow, Favorite, ShoppingCart
-from .serializers import (RecipeSerializer, TagSerializer, IngredientSerializer,
-    IngredientPostSerializer, RecipePostSerializer, UserSerializer, CustomUserSerializer, SubscribeSerializer, FavoriteSerializer, ShoppingCartSerializer)
-from rest_framework import status
+from django.db.models import Sum
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
+from djoser.views import UserViewSet
+from rest_framework import generics, mixins, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.permissions import (IsAuthenticated,
+                                        IsAuthenticatedOrReadOnly)
+from rest_framework.response import Response
+from users.models import Follow, User
+from users.permissions import IsAdminOrReadOnly
+from users.serializers import CustomUserSerializer, SubscribeSerializer
+
+from .filters import RecipeFilter
+from .models import (Favorite, Ingredient, IngredientRecipe, Recipe,
+                     ShoppingCart, Tag)
+from .serializers import (FavoriteSerializer, IngredientPostSerializer,
+                          IngredientSerializer, RecipePostSerializer,
+                          RecipeSerializer, ShoppingCartSerializer,
+                          TagSerializer)
 
 
 class CustomUserViewSet(UserViewSet):
@@ -64,6 +71,8 @@ class CustomUserViewSet(UserViewSet):
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = RecipeFilter
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user) 
@@ -154,6 +163,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         response['Content-Disposition'] = f'attachment; filename={filename}'
         return response
 
+
 class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
@@ -163,6 +173,9 @@ class TagViewSet(viewsets.ModelViewSet):
 class IngredientViewSet(viewsets.ModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
+    permission_classes = [IsAdminOrReadOnly]
+    filter_backends = (DjangoFilterBackend,)
+    filterset_fields = ('name',)
 
     def get_serializer_class(self):
         if self.request.method in ['POST', 'PUT', 'PATCH']:
