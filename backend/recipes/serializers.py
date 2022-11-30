@@ -160,22 +160,6 @@ class RecipePostSerializer(serializers.ModelSerializer):
         return RecipeSerializer(instance, context=context).data
 
 
-# class RecipeMiniSerializer(serializers.ModelSerializer):
-#     """Сериализатор для просмотра рецептов в профиле автора"""
-#     tags = TagSerializer(many=True)
-#     ingredients = serializers.SerializerMethodField()
-#     is_favorited = serializers.SerializerMethodField(read_only=True)
-#     is_in_shopping_cart = serializers.SerializerMethodField(read_only=True)
-
-#     class Meta:
-#         model = Recipe
-#         fields = (
-#             'id', 'tags', 'ingredients', 'is_favorited',
-#             'is_in_shopping_cart', 'name', 'image', 'text', 'cooking_time'
-#         )
-
-
-
 class FavoriteSerializer(RecipeSerializer):
     name = serializers.ReadOnlyField()
     cooking_time = serializers.ReadOnlyField()

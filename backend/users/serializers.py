@@ -1,8 +1,9 @@
 from djoser.serializers import UserCreateSerializer, UserSerializer
 # from recipes.serializers import RecipeSerializer
-from rest_framework import serializers
+from rest_framework import serializers, status
 
 from .models import Follow, User
+from recipes.models import Recipe
 
 
 class CustomUserSerializer(UserSerializer):
@@ -11,12 +12,19 @@ class CustomUserSerializer(UserSerializer):
     first_name = serializers.CharField(required=True)
     last_name = serializers.CharField(required=True)
     password = serializers.CharField(write_only=True)
+    is_subscribed = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = (
-            "id", "email", "username", "first_name", "last_name", "password",  # проверить нужен ли passsword ??
+            "id", "email", "username", "first_name", "last_name", "is_subscribed", "password",  # проверить нужен ли passsword ??
          )
+
+    def get_is_subscribed(self, obj):
+        user = self.context.get('request').user
+        if user.is_anonymous:
+            return False
+        return user.follower.filter(author=obj).exists()
 
 
 class CustomUserCreateSerializer(UserCreateSerializer):
@@ -29,16 +37,45 @@ class CustomUserCreateSerializer(UserCreateSerializer):
             'last_name', 'password')
 
 
+class RecipeMiniSerializer(serializers.ModelSerializer):
+    """Мини-сериализатор для просмотра рецептов в профиле пользователя"""
+
+    class Meta:
+        model = Recipe
+        fields = (
+            'id', 'name', 'image', 'cooking_time'
+        )
+
+
 class SubscribeSerializer(UserSerializer):
     """ Сериализатор для создания/получения подписок """
     # recipes_count = serializers.SerializerMethodField()
     # recipes = serializers.SerializerMethodField()
+    is_subscribed = serializers.SerializerMethodField()
+    recipes = serializers.SerializerMethodField()
+    recipes_count = serializers.SerializerMethodField()
 
     class Meta(UserSerializer.Meta): 
         #fields = UserSerializer.Meta.fields + ('recipes_count', 'recipes')
         fields = (
-            "id", "email", "username", "first_name", "last_name") #, "recipes", "recipes_count"
-        read_only_fields = ('email', 'username')
+            "id", "email", "username", "first_name", "last_name", "is_subscribed", "recipes", "recipes_count",)
+        read_only_fields = ('email', 'username', 'first_name', 'last_name')
+
+    def get_is_subscribed(self, obj):
+        user = self.context.get('request').user
+        if user.is_anonymous:
+            return False
+        return user.follower.filter(author=obj).exists()
+
+    def get_recipes(self, obj):
+        user = self.context.get('request').user
+        if user.is_anonymous:
+            return False
+        recipes = Recipe.objects.filter(author=obj)
+        return RecipeMiniSerializer(recipes, many=True).data
+
+    def get_recipes_count(self, obj):
+        return Recipe.objects.filter(author=obj).count()
 
     def validate(self, data):
         author = self.instance
