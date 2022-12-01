@@ -2,17 +2,16 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
+from rest_framework import routers
+
 from recipes.views import IngredientViewSet, RecipeViewSet, TagViewSet
 from users.views import CustomUserViewSet
-from rest_framework import routers
 
 router = routers.DefaultRouter()
 router.register(r'recipes', RecipeViewSet)
 router.register(r'tags', TagViewSet)
 router.register(r'ingredients', IngredientViewSet)
 router.register(r'users', CustomUserViewSet)
-#router.register(r'follow', FollowViewSet)
-#router.register(r'users', UserViewSet)
 
 
 urlpatterns = [

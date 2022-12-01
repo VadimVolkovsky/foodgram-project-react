@@ -3,8 +3,7 @@ import base64
 import webcolors
 from django.core.files.base import ContentFile
 from rest_framework import serializers, status
-from rest_framework.validators import UniqueTogetherValidator
-from users.models import Follow
+
 from users.serializers import CustomUserSerializer
 
 from .models import (Favorite, Ingredient, IngredientRecipe, Recipe,
@@ -22,6 +21,7 @@ class Base64ImageField(serializers.ImageField):
 
 
 class Hex2NameColor(serializers.Field):
+    """Добавление цвета при создании тега"""
     def to_representation(self, value):
         return value
 
@@ -48,7 +48,6 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 class IngredientPostSerializer(serializers.ModelSerializer):
     """Сериализатор поля игредиентов при создании новых рецептов"""
-
     class Meta:
         model = Ingredient
         fields = (
@@ -70,6 +69,7 @@ class IngredientRecipeSerializer(serializers.ModelSerializer):
 
 
 class TagSerializer(serializers.ModelSerializer):
+    """Сериалайзер для создания и просмотра тегов"""
     color = Hex2NameColor()
 
     class Meta:
@@ -96,16 +96,21 @@ class RecipeSerializer(serializers.ModelSerializer):
         read_only_fields = ('author',)
 
     def get_ingredients(self, obj):
+        """Отображает ингредиенты в составе рецепта"""
         ingredients = IngredientRecipe.objects.filter(recipe=obj)
         return IngredientRecipeSerializer(ingredients, many=True).data
 
     def get_is_favorited(self, obj):
+        """Проверяет добавлен ли рецепт в избранное
+        у авторизованного пользователя"""
         user = self.context.get('request').user
         if user.is_anonymous:
             return False
         return user.favorites.filter(recipe=obj).exists()
 
     def get_is_in_shopping_cart(self, obj):
+        """Проверяет добавлен ли рецепт в корзину
+        у авторизованного пользователя"""
         user = self.context.get('request').user
         if user.is_anonymous:
             return False
@@ -137,7 +142,6 @@ class RecipePostSerializer(serializers.ModelSerializer):
         ingredients = self.initial_data.pop("ingredients")   # список ингредиентов
         recipe = Recipe.objects.create(**validated_data)  # создаем рецепт без тегов и ингредиентов
         for ingredient in ingredients:
-            print(f'Печатаем ингредиент {ingredient}')
             ingredient_amount = ingredient.pop("amount")  # вырезаем amount
             ingredient_obj = Ingredient.objects.get(**ingredient)  # достаем объект ингредиента
 
@@ -161,6 +165,7 @@ class RecipePostSerializer(serializers.ModelSerializer):
 
 
 class FavoriteSerializer(RecipeSerializer):
+    """Сериализатор для добавления рецепта в избранное"""
     name = serializers.ReadOnlyField()
     cooking_time = serializers.ReadOnlyField()
     

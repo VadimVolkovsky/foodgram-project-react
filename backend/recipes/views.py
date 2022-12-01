@@ -1,19 +1,17 @@
-from collections import OrderedDict
 from datetime import datetime
 
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from djoser.views import UserViewSet
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import (IsAuthenticated,
-                                        IsAuthenticatedOrReadOnly)
+from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from users.models import Follow, User
+
+from users.models import User
 from users.permissions import IsAdminOrReadOnly
-from users.serializers import CustomUserSerializer, SubscribeSerializer
 
 from .filters import RecipeFilter
 from .models import (Favorite, Ingredient, IngredientRecipe, Recipe,
@@ -24,13 +22,12 @@ from .serializers import (FavoriteSerializer, IngredientPostSerializer,
                           TagSerializer)
 
 
-
-
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
-    filter_backends = (DjangoFilterBackend,)
+    filter_backends = (DjangoFilterBackend, OrderingFilter,)
     filterset_class = RecipeFilter
+    ordering = ('-id',)
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user) 
@@ -113,8 +110,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 for ingredient in ingredients
             ]
         )
-        shopping_list += '\n\n' # придумать подвал
-        shopping_list += 'придумать подвал' # придумать подвал
+        shopping_list += '\n\n' 
+        shopping_list += '**Здесь будет ваша реклама**'
 
         filename = f'{user.username}_shopping_list.txt'
         response = HttpResponse(shopping_list, content_type='text/plain')
@@ -125,15 +122,19 @@ class RecipeViewSet(viewsets.ModelViewSet):
 class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
+    pagination_class = None
     permission_classes = [IsAdminOrReadOnly]
 
 
 class IngredientViewSet(viewsets.ModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
+    pagination_class = None
     permission_classes = [IsAdminOrReadOnly]
-    filter_backends = (DjangoFilterBackend,)
+    filter_backends = (DjangoFilterBackend, SearchFilter)
     filterset_fields = ('name',)
+    search_fields = ('^name',)
+    
 
     def get_serializer_class(self):
         if self.request.method in ['POST', 'PUT', 'PATCH']:

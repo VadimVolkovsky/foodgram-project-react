@@ -1,15 +1,13 @@
-from django.shortcuts import render
-
+from django.shortcuts import get_object_or_404, render
+from djoser.views import UserViewSet
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from .models import Follow, User
-from .serializers import CustomUserSerializer, SubscribeSerializer
 from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
-
-from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
-from rest_framework import status, viewsets
-from djoser.views import UserViewSet
+
+from .models import Follow, User
+from .serializers import CustomUserSerializer, SubscribeSerializer, CustomUserCreateSerializer
 
 
 class CustomUserViewSet(UserViewSet):
@@ -19,6 +17,11 @@ class CustomUserViewSet(UserViewSet):
     def get_queryset(self):
         new_queryset = User.objects.all()
         return new_queryset
+
+    def get_serializer_class(self):
+        if self.request.method in ['POST', 'PUT', 'PATCH']: # заменить на SAVE_METHODS
+            return CustomUserCreateSerializer
+        return CustomUserSerializer
 
     @action(detail=True, methods=['post', 'delete'],
             permission_classes=[IsAuthenticated])
@@ -47,10 +50,8 @@ class CustomUserViewSet(UserViewSet):
         """Метод для просмотра своих подписок"""
         user = request.user
         queryset = User.objects.filter(following__user=user)
-        #pages = self.paginate_queryset(queryset)
-        pages = queryset
+        pages = self.paginate_queryset(queryset)
         serializer = SubscribeSerializer(
             pages, many=True, context={'request': request}
         )
-        #return self.get_paginated_response(serializer.data)
-        return Response(serializer.data)
+        return self.get_paginated_response(serializer.data)
