@@ -1,13 +1,13 @@
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet
-from rest_framework import status, viewsets
+from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.permissions import (IsAuthenticated,
-                                        IsAuthenticatedOrReadOnly)
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .models import Follow, User
-from .serializers import CustomUserSerializer, SubscribeSerializer, CustomUserCreateSerializer
+from .serializers import (CustomUserCreateSerializer, CustomUserSerializer,
+                          SubscribeSerializer)
 
 
 class CustomUserViewSet(UserViewSet):
@@ -19,7 +19,7 @@ class CustomUserViewSet(UserViewSet):
         return new_queryset
 
     def get_serializer_class(self):
-        if self.request.method in ['POST', 'PUT', 'PATCH']: # заменить на SAVE_METHODS
+        if self.request.method in ['POST', 'PUT', 'PATCH']:
             return CustomUserCreateSerializer
         return CustomUserSerializer
 

@@ -94,5 +94,3 @@ class SubscribeSerializer(UserSerializer):
                 code=status.HTTP_400_BAD_REQUEST,
             )
         return data
-
-

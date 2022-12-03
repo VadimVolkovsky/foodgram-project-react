@@ -51,7 +51,7 @@ class IngredientPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ingredient
         fields = (
-           "id", "name", "measurement_unit", #"amount"
+           "id", "name", "measurement_unit",
         )
 
 
@@ -137,27 +137,26 @@ class RecipePostSerializer(serializers.ModelSerializer):
         read_only_fields = ('author',)
 
     def create(self, validated_data):
-        tags = validated_data.pop("tags")  # вырезали теги
-        ingredients_temp = validated_data.pop("ingredients") # вырезали ненужное
-        ingredients = self.initial_data.pop("ingredients")   # список ингредиентов
-        recipe = Recipe.objects.create(**validated_data)  # создаем рецепт без тегов и ингредиентов
+        tags = validated_data.pop("tags")
+        validated_data.pop("ingredients")
+        ingredients = self.initial_data.pop("ingredients")
+        recipe = Recipe.objects.create(**validated_data)
         for ingredient in ingredients:
-            ingredient_amount = ingredient.pop("amount")  # вырезаем amount
-            ingredient_obj = Ingredient.objects.get(**ingredient)  # достаем объект ингредиента
+            ingredient_amount = ingredient.pop("amount")
+            ingredient_obj = Ingredient.objects.get(**ingredient)
 
-        # создаем объект в связной таблице ингредиентов:
-            current_ingredient, status = ( 
+            current_ingredient, status = (
                 IngredientRecipe.objects.get_or_create(
                     recipe=recipe,
                     ingredient=ingredient_obj,
                     amount=ingredient_amount
                     )
             )
-            recipe.ingredients.add(ingredient_obj) # добавляем ингредиент в рецепт
-        
-        recipe.tags.set(tags) # добавляем все теги в рецепт через set
+            recipe.ingredients.add(ingredient_obj)
+
+        recipe.tags.set(tags)
         return recipe
-    
+
     def to_representation(self, instance):
         request = self.context.get('request')
         context = {'request': request}
@@ -168,10 +167,10 @@ class FavoriteSerializer(RecipeSerializer):
     """Сериализатор для добавления рецепта в избранное"""
     name = serializers.ReadOnlyField()
     cooking_time = serializers.ReadOnlyField()
-    
+
     class Meta(RecipeSerializer.Meta):
         fields = ("id", "name", "image", "cooking_time")
-        
+
     def validate(self, data):
         recipe = self.instance
         user = self.context.get('request').user

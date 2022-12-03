@@ -1,8 +1,8 @@
 from django.contrib import admin
 
-from .models import Ingredient, Recipe, Tag, IngredientRecipe
 from users.models import User
-from django.db.models import Sum
+
+from .models import Ingredient, IngredientRecipe, Recipe, Tag
 
 
 class IngredientInLine(admin.TabularInline):
@@ -72,10 +72,9 @@ class UserAdmin(admin.ModelAdmin):
         'email',
     )
     list_filter = ('email', 'username',)
-  
+
 
 admin.site.register(Recipe, RecipeAdmin)
 admin.site.register(Ingredient, IngredientAdmin)
 admin.site.register(Tag, TagAdmin)
 admin.site.register(User, UserAdmin)
-

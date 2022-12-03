@@ -98,7 +98,7 @@ class Recipe(models.Model):
         return self.name
 
 
-class IngredientRecipe(models.Model): 
+class IngredientRecipe(models.Model):
     """Связующая модель для ингредиентов и рецептов"""
     recipe = models.ForeignKey(
         Recipe,

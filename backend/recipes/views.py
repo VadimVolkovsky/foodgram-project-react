@@ -30,7 +30,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     ordering = ('-id',)
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user) 
+        serializer.save(author=self.request.user)
 
     def get_serializer_class(self):
         if self.request.method in ['POST', 'PUT', 'PATCH']:
@@ -51,7 +51,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
             Favorite.objects.create(user=user, recipe=recipe)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
+
         if request.method == "DELETE":
             favorite = get_object_or_404(Favorite, user=user, recipe=recipe)
             favorite.delete()
@@ -110,7 +110,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 for ingredient in ingredients
             ]
         )
-        shopping_list += '\n\n' 
+        shopping_list += '\n\n'
         shopping_list += '**Здесь будет ваша реклама**'
 
         filename = f'{user.username}_shopping_list.txt'
@@ -134,10 +134,8 @@ class IngredientViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend, SearchFilter)
     filterset_fields = ('name',)
     search_fields = ('^name',)
-    
 
     def get_serializer_class(self):
         if self.request.method in ['POST', 'PUT', 'PATCH']:
             return IngredientPostSerializer
         return IngredientSerializer
-
