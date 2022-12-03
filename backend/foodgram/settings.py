@@ -16,10 +16,11 @@ ALLOWED_HOSTS = [
     'testserver',
 ]
 
-CORS_URLS_REGEX = r'^/api/.*$'
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost',
-]
+CORS_ORIGIN_ALLOW_ALL = True
+# CORS_URLS_REGEX = r'^/api/v1/.*$'
+# CORS_ALLOWED_ORIGINS = [
+#     'http://localhost',
+# ]
 
 
 INSTALLED_APPS = [

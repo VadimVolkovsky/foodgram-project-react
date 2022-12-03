@@ -14,12 +14,13 @@ class Tag(models.Model):
     color = models.CharField(
         max_length=7,
         blank=True,
-        null=True
+        null=True,
+        verbose_name='Цвет'
     )
     slug = models.SlugField(
         max_length=200,
         unique=True,
-        verbose_name='URL тега'
+        verbose_name='Slug'
     )
 
     class Meta:
@@ -51,7 +52,11 @@ class Ingredient(models.Model):
 
 class Recipe(models.Model):
     """Модель рецептов"""
-    tags = models.ManyToManyField(Tag)
+    tags = models.ManyToManyField(
+        Tag,
+        related_name='recipes',
+        verbose_name='Тег'
+    )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -60,7 +65,8 @@ class Recipe(models.Model):
     )
     ingredients = models.ManyToManyField(
         Ingredient, through="IngredientRecipe",
-        related_name="recipes"
+        related_name="recipes",
+        verbose_name='Ингредиент'
     )
     name = models.CharField(
         max_length=200,
@@ -96,10 +102,13 @@ class IngredientRecipe(models.Model):
     """Связующая модель для ингредиентов и рецептов"""
     recipe = models.ForeignKey(
         Recipe,
-        on_delete=models.CASCADE)
+        on_delete=models.CASCADE
+    )
     ingredient = models.ForeignKey(
         Ingredient,
-        on_delete=models.CASCADE)
+        on_delete=models.CASCADE,
+        verbose_name='Ингредиент'
+    )
     amount = models.PositiveSmallIntegerField(
         verbose_name='Количество ингредиента',
         validators=[
