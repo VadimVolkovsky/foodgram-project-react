@@ -1,7 +1,6 @@
 from django.contrib import admin
 
 from users.models import User
-
 from .models import Ingredient, IngredientRecipe, Recipe, Tag
 
 
@@ -32,12 +31,14 @@ class RecipeAdmin(admin.ModelAdmin):
     @admin.display(description='Теги')
     def get_tags(self, obj):
         """Отображает в админке теги каждого рецепта"""
-        return ", ".join([t.name for t in obj.tags.all()])
+        return ", ".join(
+            [t for t in obj.tags.values_list('name', flat=True)])
 
     @admin.display(description='Ингредиенты')
     def get_ingredients(self, obj):
         """Отображает в админке ингредиенты каждого рецепта"""
-        return ", ".join([i.name for i in obj.ingredients.all()])
+        return ", ".join(
+            [i for i in obj.ingredients.values_list('name', flat=True)])
 
     @admin.display(description='В избранном')
     def get_in_favorited(self, obj):
