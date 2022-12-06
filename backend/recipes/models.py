@@ -102,7 +102,8 @@ class IngredientRecipe(models.Model):
     """Связующая модель для ингредиентов и рецептов"""
     recipe = models.ForeignKey(
         Recipe,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        related_name='ingredientrecipes'
     )
     ingredient = models.ForeignKey(
         Ingredient,
@@ -114,10 +115,17 @@ class IngredientRecipe(models.Model):
         validators=[
             MinValueValidator(
                 1,
-                message='Количество ингредиента не может быть меньше единицы'
-            )
+                message='Количество ингредиента не может быть меньше единицы')
         ]
     )
+
+    class Meta:
+        constraints = [
+            UniqueConstraint(
+                fields=['recipe', 'ingredient'],
+                name="unique_ingredient_in_recipe"
+            )
+        ]
 
 
 class Favorite(models.Model):

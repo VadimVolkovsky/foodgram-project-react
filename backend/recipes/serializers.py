@@ -1,36 +1,11 @@
-import base64
-
-import webcolors
-from django.core.files.base import ContentFile
 from rest_framework import serializers, status
+from rest_framework import exceptions
+from django.shortcuts import get_object_or_404
 
 from users.serializers import CustomUserSerializer
-
 from .models import (Favorite, Ingredient, IngredientRecipe, Recipe,
                      ShoppingCart, Tag)
-
-
-class Base64ImageField(serializers.ImageField):
-    """Добавление изображений к рецептам"""
-    def to_internal_value(self, data):
-        if isinstance(data, str) and data.startswith('data:image'):
-            format, imgstr = data.split(';base64,')
-            ext = format.split('/')[-1]
-            data = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
-        return super().to_internal_value(data)
-
-
-class Hex2NameColor(serializers.Field):
-    """Добавление цвета при создании тега"""
-    def to_representation(self, value):
-        return value
-
-    def to_internal_value(self, data):
-        try:
-            webcolors.hex_to_name(data)
-        except ValueError:
-            raise serializers.ValidationError("Для этого цвета нет имени")
-        return data
+from .fields import Base64ImageField, Hex2NameColor
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -46,18 +21,9 @@ class IngredientSerializer(serializers.ModelSerializer):
         )
 
 
-class IngredientPostSerializer(serializers.ModelSerializer):
-    """Сериализатор поля игредиентов при создании новых рецептов"""
-    class Meta:
-        model = Ingredient
-        fields = (
-           "id", "name", "measurement_unit",
-        )
-
-
 class IngredientRecipeSerializer(serializers.ModelSerializer):
     """Сериализатор для связной модели IngredientRecipe"""
-    id = serializers.ReadOnlyField(source='ingredient.id')
+    id = serializers.IntegerField(source='ingredient.id')
     name = serializers.ReadOnlyField(source='ingredient.name')
     measurement_unit = serializers.ReadOnlyField(
         source='ingredient.measurement_unit'
@@ -82,7 +48,9 @@ class TagSerializer(serializers.ModelSerializer):
 class RecipeSerializer(serializers.ModelSerializer):
     """Сериализатор для просмотра рецептов"""
     tags = TagSerializer(many=True)
-    ingredients = serializers.SerializerMethodField()
+    ingredients = IngredientRecipeSerializer(
+        many=True, source='ingredientrecipes'
+    )
     author = CustomUserSerializer()
     is_favorited = serializers.SerializerMethodField(read_only=True)
     is_in_shopping_cart = serializers.SerializerMethodField(read_only=True)
@@ -94,11 +62,6 @@ class RecipeSerializer(serializers.ModelSerializer):
             'is_in_shopping_cart', 'name', 'image', 'text', 'cooking_time'
         )
         read_only_fields = ('author',)
-
-    def get_ingredients(self, obj):
-        """Отображает ингредиенты в составе рецепта"""
-        ingredients = IngredientRecipe.objects.filter(recipe=obj)
-        return IngredientRecipeSerializer(ingredients, many=True).data
 
     def get_is_favorited(self, obj):
         """Проверяет добавлен ли рецепт в избранное
@@ -136,26 +99,65 @@ class RecipePostSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ('author',)
 
-    def create(self, validated_data):
-        tags = validated_data.pop("tags")
-        validated_data.pop("ingredients")
-        ingredients = self.initial_data.pop("ingredients")
-        recipe = Recipe.objects.create(**validated_data)
+    def validate_ingredients(self, value):
+        """Валидация поля ингредиентов при создании рецепта"""
+        if not value:
+            raise serializers.ValidationError(
+                'Необходимо указать как минимум один ингредиент'
+            )
+        ingredients_id_list = []
+        for item in value:
+            if item['amount'] == 0:
+                raise serializers.ValidationError(
+                    'Количество ингредиента не может быть равным нулю'
+                )
+            ingredient_id = item['ingredient']['id']
+            if ingredient_id in ingredients_id_list:
+                raise serializers.ValidationError(
+                    'Указано несколько одинаковых ингредиентов'
+                )
+            ingredients_id_list.append(ingredient_id)
+        return value
+
+    def _create_ingredient_recipe_objects(self, ingredients, recipe):
+        """Вспомогательный метод для создания
+        объектов модели IngredientRecipe"""
         for ingredient in ingredients:
             ingredient_amount = ingredient.pop("amount")
-            ingredient_obj = Ingredient.objects.get(**ingredient)
-
-            current_ingredient, status = (
-                IngredientRecipe.objects.get_or_create(
-                    recipe=recipe,
-                    ingredient=ingredient_obj,
-                    amount=ingredient_amount
-                    )
+            ingredient_obj = get_object_or_404(
+                Ingredient, id=ingredient['ingredient']['id']
+            )
+            IngredientRecipe.objects.get_or_create(
+                recipe=recipe,
+                ingredient=ingredient_obj,
+                amount=ingredient_amount
             )
             recipe.ingredients.add(ingredient_obj)
-
-        recipe.tags.set(tags)
         return recipe
+
+    def create(self, validated_data):
+        tags = validated_data.pop("tags")
+        ingredients = validated_data.pop('ingredients')
+        recipe = Recipe.objects.create(**validated_data)
+        recipe.tags.set(tags)
+        recipe = self._create_ingredient_recipe_objects(ingredients, recipe)
+        return recipe
+
+    def update(self, instance, validated_data):
+        user = self.context.get('request').user
+        if instance.author != user:
+            raise exceptions.PermissionDenied(
+                'Запрещено изменять рецепты других пользователей'
+            )
+        tags = validated_data.pop('tags')
+        ingredients = validated_data.pop('ingredients')
+        instance = super().update(instance, validated_data)
+        instance.tags.clear()
+        instance.tags.set(tags)
+        instance.ingredients.clear()
+        self._create_ingredient_recipe_objects(ingredients, recipe=instance)
+        instance.save()
+        return instance
 
     def to_representation(self, instance):
         request = self.context.get('request')
