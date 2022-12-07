@@ -1,5 +1,4 @@
 from rest_framework import serializers, status
-from rest_framework import exceptions
 from django.shortcuts import get_object_or_404
 
 from users.serializers import CustomUserSerializer
@@ -85,11 +84,12 @@ class RecipePostSerializer(serializers.ModelSerializer):
     tags = serializers.SlugRelatedField(
         slug_field="id",
         queryset=Tag.objects.all(),
-        many=True
+        many=True,
+        required=True
     )
 
     ingredients = IngredientRecipeSerializer(many=True)
-    image = Base64ImageField(required=False, allow_null=True)
+    image = Base64ImageField(required=True)
 
     class Meta:
         model = Recipe
@@ -119,6 +119,14 @@ class RecipePostSerializer(serializers.ModelSerializer):
             ingredients_id_list.append(ingredient_id)
         return value
 
+    def validate_tags(self, value):
+        """Валидаци поля тегов при создании рецепта"""
+        if not value:
+            raise serializers.ValidationError(
+                'Необходимо указать как минимум один тег'
+            )
+        return value
+
     def _create_ingredient_recipe_objects(self, ingredients, recipe):
         """Вспомогательный метод для создания
         объектов модели IngredientRecipe"""
@@ -144,11 +152,6 @@ class RecipePostSerializer(serializers.ModelSerializer):
         return recipe
 
     def update(self, instance, validated_data):
-        user = self.context.get('request').user
-        if instance.author != user:
-            raise exceptions.PermissionDenied(
-                'Запрещено изменять рецепты других пользователей'
-            )
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
         instance = super().update(instance, validated_data)
@@ -156,7 +159,6 @@ class RecipePostSerializer(serializers.ModelSerializer):
         instance.tags.set(tags)
         instance.ingredients.clear()
         self._create_ingredient_recipe_objects(ingredients, recipe=instance)
-        instance.save()
         return instance
 
     def to_representation(self, instance):
