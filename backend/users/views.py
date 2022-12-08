@@ -15,8 +15,7 @@ class CustomUserViewSet(UserViewSet):
     serializer_class = CustomUserSerializer
 
     def get_queryset(self):
-        new_queryset = User.objects.all()
-        return new_queryset
+        return User.objects.all()
 
     def get_serializer_class(self):
         if self.request.method in ['POST', 'PUT', 'PATCH']:

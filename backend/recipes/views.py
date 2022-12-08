@@ -1,23 +1,22 @@
-from django.utils import timezone
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import status, viewsets, mixins
+from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-
 from users.models import User
 from users.permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
+
 from .filters import RecipeFilter
 from .models import (Favorite, Ingredient, IngredientRecipe, Recipe,
                      ShoppingCart, Tag)
-from .serializers import (FavoriteSerializer,
-                          IngredientSerializer, RecipePostSerializer,
-                          RecipeSerializer, ShoppingCartSerializer,
-                          TagSerializer)
+from .serializers import (FavoriteSerializer, IngredientSerializer,
+                          RecipePostSerializer, RecipeSerializer,
+                          ShoppingCartSerializer, TagSerializer)
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -96,9 +95,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
         today = timezone.now()
         shopping_list = (
-                f'Foodgram - «Продуктовый помощник»\n\n'
-                f'Список покупок пользователя: {user.get_full_name()}\n\n'
-                'Дата: %s.%s.%s \n\n' % (today.day, today.month, today.year)
+            f'Foodgram - «Продуктовый помощник»\n\n'
+            f'Список покупок пользователя: {user.get_full_name()}\n\n'
+            'Дата: %s.%s.%s \n\n' % (today.day, today.month, today.year)
         )
         shopping_list += '\n'.join(
             [

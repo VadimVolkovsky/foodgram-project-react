@@ -1,7 +1,7 @@
 from djoser.serializers import UserCreateSerializer, UserSerializer
+from recipes.models import Recipe
 from rest_framework import serializers, status
 
-from recipes.models import Recipe
 from .models import Follow, User
 
 
@@ -17,7 +17,7 @@ class CustomUserSerializer(UserSerializer):
         fields = (
             "id", "email", "username", "first_name",
             "last_name", "is_subscribed",
-         )
+        )
 
     def get_is_subscribed(self, obj):
         """Проверяет подписку на текущего пользователя"""

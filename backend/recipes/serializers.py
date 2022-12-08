@@ -1,10 +1,10 @@
-from rest_framework import serializers, status
 from django.shortcuts import get_object_or_404
-
+from rest_framework import serializers, status
 from users.serializers import CustomUserSerializer
+
+from .fields import Base64ImageField, Hex2NameColor
 from .models import (Favorite, Ingredient, IngredientRecipe, Recipe,
                      ShoppingCart, Tag)
-from .fields import Base64ImageField, Hex2NameColor
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -15,9 +15,7 @@ class IngredientSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = IngredientRecipe
-        fields = (
-           "id", "name", "measurement_unit"
-        )
+        fields = ("id", "name", "measurement_unit")
 
 
 class IngredientRecipeSerializer(serializers.ModelSerializer):
@@ -148,8 +146,7 @@ class RecipePostSerializer(serializers.ModelSerializer):
         ingredients = validated_data.pop('ingredients')
         recipe = Recipe.objects.create(**validated_data)
         recipe.tags.set(tags)
-        recipe = self._create_ingredient_recipe_objects(ingredients, recipe)
-        return recipe
+        return self._create_ingredient_recipe_objects(ingredients, recipe)
 
     def update(self, instance, validated_data):
         tags = validated_data.pop('tags')
