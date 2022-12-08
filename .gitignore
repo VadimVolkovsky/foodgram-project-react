@@ -131,6 +131,6 @@ dmypy.json
 # .idea
 .idea
 
-/static/
+/backend_static/
 /media/
 media/
