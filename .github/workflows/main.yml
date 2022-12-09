@@ -61,10 +61,10 @@ jobs:
         key: ${{ secrets.SSH_KEY }}
         passphrase: ${{ secrets.SERVER_PASSPHRASE }} # Если ваш ssh-ключ защищён фразой-паролем
         script: |
-          # Выполняет pull образа с DockerHub
+          # Выполняет pull образа с DockerHub:
           sudo docker pull ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPOSITORY_NAME }}:latest
-          #остановка всех контейнеров
+          #остановка всех контейнеров:
           sudo docker-compose stop
-          sudo docker-compose rm --all # удаляем все контейнеры с сервера
+          #удаляем все контейнеры с сервера:
+          sudo docker-compose rm 
           sudo docker-compose up -d 
-          # sudo docker run --rm -d -p 5000:5000 ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPOSITORY_NAME }}:latest
