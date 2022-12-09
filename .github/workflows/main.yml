@@ -47,14 +47,7 @@ jobs:
         with:
           context: backend
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPOSITORY_NAME }}:latest 
-      - name: Push frontend to Docker Hub
-        # Пуш образа frontend в Docker Hub 
-        uses: docker/build-push-action@v2 
-        with:
-          context: frontend
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPOSITORY_NAME }}:latest     
+          tags: ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPOSITORY_NAME }}:latest   
 
   deploy:
     runs-on: ubuntu-latest

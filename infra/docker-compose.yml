@@ -2,9 +2,7 @@ version: '3.3'
 services:
 
   frontend:
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
+    image: vadimvolkovsky/foodgram_frontend:latest
     volumes:
       - ../frontend/:/app/result_build/
   
@@ -17,10 +15,7 @@ services:
     container_name: foodgram_postgres_db
 
   backend:
-    build:
-      context: ../backend
-      dockerfile: Dockerfile
-    #image: # vadimvolkovsky/название_образа_foodgram_backend:latest
+    image: vadimvolkovsky/foodgram:latest
     restart: always
     ports:
       - "8000:8000"
