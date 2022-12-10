@@ -17,8 +17,6 @@ services:
   backend:
     image: vadimvolkovsky/foodgram:latest
     restart: always
-    # ports:
-    #   - "8000:8000"
     volumes:
       - static_value:/app/backend_static/
       - media_value:/app/media/
