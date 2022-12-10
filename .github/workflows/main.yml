@@ -61,6 +61,7 @@ jobs:
         key: ${{ secrets.SSH_KEY }}
         passphrase: ${{ secrets.SERVER_PASSPHRASE }}
         script: |
+          sudo cd infra/
           # Выполняет pull образа с DockerHub:
           sudo docker pull ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPOSITORY_NAME }}:latest
           #остановка всех контейнеров:
