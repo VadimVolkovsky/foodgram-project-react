@@ -68,4 +68,4 @@ jobs:
           #удаляем backend(web) контейнер с сервера:
           sudo docker-compose rm backend
           # запускаем сборку новых контейнеров
-          sudo docker-compose up -d 
+          sudo docker-compose up -d --build
