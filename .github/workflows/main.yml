@@ -65,7 +65,7 @@ jobs:
           # Выполняет pull образа с DockerHub:
           sudo docker pull ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPOSITORY_NAME }}:latest
           #остановка всех контейнеров:
-          sudo docker-compose stop
+          sudo docker-compose down -v
           #удаляем backend(web) контейнер с сервера:
           sudo docker-compose rm backend
           # запускаем сборку новых контейнеров
