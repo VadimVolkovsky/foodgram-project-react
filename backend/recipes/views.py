@@ -8,15 +8,15 @@ from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+
+from recipes.filters import RecipeFilter
+from recipes.models import (Favorite, Ingredient, IngredientRecipe, Recipe,
+                            ShoppingCart, Tag)
+from recipes.serializers import (FavoriteSerializer, IngredientSerializer,
+                                 RecipePostSerializer, RecipeSerializer,
+                                 ShoppingCartSerializer, TagSerializer)
 from users.models import User
 from users.permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
-
-from .filters import RecipeFilter
-from .models import (Favorite, Ingredient, IngredientRecipe, Recipe,
-                     ShoppingCart, Tag)
-from .serializers import (FavoriteSerializer, IngredientSerializer,
-                          RecipePostSerializer, RecipeSerializer,
-                          ShoppingCartSerializer, TagSerializer)
 
 
 class RecipeViewSet(viewsets.ModelViewSet):

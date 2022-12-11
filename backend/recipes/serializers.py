@@ -1,10 +1,10 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers, status
-from users.serializers import CustomUserSerializer
 
-from .fields import Base64ImageField, Hex2NameColor
-from .models import (Favorite, Ingredient, IngredientRecipe, Recipe,
-                     ShoppingCart, Tag)
+from recipes.fields import Base64ImageField, Hex2NameColor
+from recipes.models import (Favorite, Ingredient, IngredientRecipe, Recipe,
+                            ShoppingCart, Tag)
+from users.serializers import CustomUserSerializer
 
 
 class IngredientSerializer(serializers.ModelSerializer):
