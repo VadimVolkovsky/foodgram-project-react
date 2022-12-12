@@ -125,6 +125,10 @@ class TagViewSet(mixins.RetrieveModelMixin,
     permission_classes = [IsAdminOrReadOnly]
 
 
+class IngredientSearchFilter(SearchFilter):
+    search_param = 'name'
+
+
 class IngredientViewSet(mixins.RetrieveModelMixin,
                         mixins.ListModelMixin,
                         viewsets.GenericViewSet):
@@ -132,7 +136,6 @@ class IngredientViewSet(mixins.RetrieveModelMixin,
     serializer_class = IngredientSerializer
     pagination_class = None
     permission_classes = [IsAdminOrReadOnly]
-    filter_backends = (DjangoFilterBackend, SearchFilter)
+    filter_backends = (DjangoFilterBackend, IngredientSearchFilter)
     filterset_fields = ('name',)
-    search_param = 'name'
-    search_fields = ('^name',)
+    # search_fields = ('^name',)
