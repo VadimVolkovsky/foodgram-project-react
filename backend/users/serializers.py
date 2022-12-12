@@ -77,7 +77,7 @@ class SubscribeSerializer(UserSerializer):
 
     def get_recipes_count(self, obj):
         """Счетчик рецептов текущего пользователя"""
-        return Recipe.objects.filter(author=obj).count()
+        return obj.recipes.count()
 
     def validate(self, data):
         author = self.instance
