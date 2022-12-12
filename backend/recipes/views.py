@@ -136,6 +136,6 @@ class IngredientViewSet(mixins.RetrieveModelMixin,
     serializer_class = IngredientSerializer
     pagination_class = None
     permission_classes = [IsAdminOrReadOnly]
-    filter_backends = (DjangoFilterBackend, IngredientSearchFilter)
+    filter_backends = (DjangoFilterBackend, SearchFilter)
     # filterset_fields = ('name',)
     search_fields = ('^name',)
