@@ -137,5 +137,5 @@ class IngredientViewSet(mixins.RetrieveModelMixin,
     pagination_class = None
     permission_classes = [IsAdminOrReadOnly]
     filter_backends = (DjangoFilterBackend, IngredientSearchFilter)
-    #filterset_fields = ('name',)
+    # filterset_fields = ('name',)
     search_fields = ('^name',)
