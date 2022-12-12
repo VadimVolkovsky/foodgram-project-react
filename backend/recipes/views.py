@@ -8,11 +8,11 @@ from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.pagination import PageNumberPagination
 
 from recipes.filters import IngredientSearchFilter, RecipeFilter
 from recipes.models import (Favorite, Ingredient, IngredientRecipe, Recipe,
                             ShoppingCart, Tag)
+from recipes.pagination import CustomPagination
 from recipes.serializers import (FavoriteSerializer, IngredientSerializer,
                                  RecipePostSerializer, RecipeSerializer,
                                  ShoppingCartSerializer, TagSerializer)
@@ -23,7 +23,7 @@ from users.permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
-    pagination_class = PageNumberPagination
+    pagination_class = CustomPagination
     permission_classes = (IsAuthorOrReadOnly,)
     filter_backends = (DjangoFilterBackend, OrderingFilter,)
     filterset_class = RecipeFilter
@@ -123,7 +123,6 @@ class TagViewSet(mixins.RetrieveModelMixin,
                  viewsets.GenericViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
-    pagination_class = None
     permission_classes = [IsAdminOrReadOnly]
 
 
@@ -132,7 +131,6 @@ class IngredientViewSet(mixins.RetrieveModelMixin,
                         viewsets.GenericViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
-    pagination_class = None
     permission_classes = [IsAdminOrReadOnly]
     filter_backends = (DjangoFilterBackend, IngredientSearchFilter)
     search_fields = ('^name',)

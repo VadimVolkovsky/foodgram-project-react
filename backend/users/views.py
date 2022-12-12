@@ -5,6 +5,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from recipes.pagination import CustomPagination
 from users.models import Follow, User
 from users.serializers import (CustomUserCreateSerializer,
                                CustomUserSerializer, SubscribeSerializer)
@@ -13,6 +14,7 @@ from users.serializers import (CustomUserCreateSerializer,
 class CustomUserViewSet(UserViewSet):
     queryset = User.objects.all()
     serializer_class = CustomUserSerializer
+    pagination_class = CustomPagination
 
     def get_queryset(self):
         return User.objects.all()
