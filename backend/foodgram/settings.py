@@ -13,14 +13,13 @@ DEBUG = False
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 ALLOWED_HOSTS = [os.getenv('ALLOWED_HOSTS', default='*')]
-# ALLOWED_HOSTS = ['*']
 
 # CORS_ALLOW_ALL_ORIGINS = True
 # # CORS_ORIGIN_ALLOW_ALL = True
-# # CORS_URLS_REGEX = r'^/api/.*$'
-# # CORS_ALLOWED_ORIGINS = [
-# #     'http://localhost',
-# # ]
+CORS_URLS_REGEX = r'^/api/.*$'
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost',
+]
 
 
 INSTALLED_APPS = [
