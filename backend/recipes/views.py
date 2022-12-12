@@ -8,6 +8,7 @@ from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.pagination import PageNumberPagination
 
 from recipes.filters import IngredientSearchFilter, RecipeFilter
 from recipes.models import (Favorite, Ingredient, IngredientRecipe, Recipe,
@@ -22,6 +23,7 @@ from users.permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
+    pagination_class = PageNumberPagination
     permission_classes = (IsAuthorOrReadOnly,)
     filter_backends = (DjangoFilterBackend, OrderingFilter,)
     filterset_class = RecipeFilter

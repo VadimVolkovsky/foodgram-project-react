@@ -69,11 +69,6 @@ class SubscribeSerializer(UserSerializer):
 
     def get_recipes(self, obj):
         """Показывает рецепты текущего пользователя"""
-        # user = self.context.get('request').user
-        # if user.is_anonymous:
-        #     return False
-        # recipes = Recipe.objects.filter(author=obj).order_by('-id')
-        # return RecipeMiniSerializer(recipes, many=True).data
         request = self.context.get('request')
         limit = request.GET.get('recipes_limit')
         recipes = obj.recipes.all()
