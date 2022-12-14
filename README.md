@@ -159,4 +159,6 @@ Response:
 ```
 
 
-### Автор прокта: Vadim Volkovsky
+### Автор проекта:
+
+**Vadim Volkovsky**
