@@ -49,7 +49,8 @@ python manage.py migrate
 ```
 
 **Сборка контейнеров:**
-Из папки infra/ разверните контейнеры при помощи docker-compose:
+
+Находясь в директории /infra разверните контейнеры при помощи docker-compose:
 ```
 docker-compose up -d --build
 ```
@@ -156,3 +157,6 @@ Response:
   "recipes_count": 0
 }
 ```
+
+
+### Автор прокта: Vadim Volkovsky
