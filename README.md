@@ -1,5 +1,3 @@
-http://158.160.14.110
-
 login: soer_kosolapiy
 
 password: khabarovsk
