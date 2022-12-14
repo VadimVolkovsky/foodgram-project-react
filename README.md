@@ -1,6 +1,6 @@
 login: soer_kosolapiy
 
-password: khabarovsk
+password: khabarovsk 
 
 ### Описание проекта
 Сайт Foodgram, «Продуктовый помощник» - это онлайн-сервис кулинарных рецептов.
