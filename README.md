@@ -21,7 +21,7 @@ password: khabarovsk
 ### Инструкция по запуску проекта
 **Клонируйте репозиторий:**
 ```
-git clone git@github.com:PashkaVRN/foodgram-project-react.git
+git clone git@github.com:VadimVolkovsky/foodgram-project-react.git
 ```
 
 **Установите и активируйте виртуальное окружение:**
