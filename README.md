@@ -47,48 +47,37 @@ pip install -r requirements.txt
 python manage.py migrate
 ```
 
-**В папке с файлом manage.py выполните команду для запуска локально:**
-```
-python manage.py runserver
-```
-
-**Сборка контейнеров контейнеров:**
+**Сборка контейнеров:**
 Из папки infra/ разверните контейнеры при помощи docker-compose:
 ```
 docker-compose up -d --build
 ```
-Выполните миграции:
 
+**Выполните миграции:**
+```
 docker-compose exec backend python manage.py migrate
-Создайте суперпользователя:
+```
 
-winpty docker-compose exec backend python manage.py createsuperuser
-Соберите статику:
+**Создайте суперпользователя:**
+```
+docker-compose exec backend python manage.py createsuperuser
+```
 
+**Соберите статику:**
+```
 docker-compose exec backend python manage.py collectstatic --no-input
-Наполните базу данных ингредиентами и тегами. Выполняйте команду из дериктории где находится файл manage.py:
+```
 
-docker-compose exec backend python manage.py load_data
-
-Остановка проекта:
-
+**Остановка проекта:**
+```
 docker-compose down
-Подготовка к запуску проекта на удаленном сервере
-Cоздать и заполнить .env файл в директории infra
+```
 
-DB_ENGINE=django.db.backends.postgresql
-DB_NAME=postgres
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=postgres
-DB_HOST=db
-DB_PORT=5432
-TOKEN=252132607137
-ALLOWED_HOSTS=*
-Примеры запросов:
-POST | Создание рецепта: http://127.0.0.1:8000/api/recipes/
-
+### Примеры запросов:
+**POST | Создание рецепта: **
+http://127.0.0.1:8000/api/recipes/
+```
 Request:
-
 {
   "ingredients": [
     {
@@ -105,8 +94,9 @@ Request:
   "text": "string",
   "cooking_time": 1
 }
+```
+```
 Response:
-
 {
   "id": 0,
   "tags": [
@@ -140,8 +130,11 @@ Response:
   "text": "string",
   "cooking_time": 1
 }
-POST | Подписаться на пользователя: http://127.0.0.1:8000/api/users/{id}/subscribe/
+```
 
+**POST | Подписаться на пользователя:**
+http://127.0.0.1:8000/api/users/{id}/subscribe/
+```
 Response:
 
 {
@@ -161,4 +154,4 @@ Response:
   ],
   "recipes_count": 0
 }
-.
+```
